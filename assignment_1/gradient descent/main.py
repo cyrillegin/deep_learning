@@ -1,6 +1,5 @@
-import random
 import matplotlib.pyplot as plt
-import json
+import numpy as np
 
 
 def createData():
@@ -31,7 +30,31 @@ def drawScatterPlot(apples, oranges):
     plt.show()
 
 
+def f(x):
+    return 0.5*x[0]**2 + 2.5*x[1]**2
+
+
+def createContours():
+    xmesh, ymesh = np.mgrid[-2:2:50j, -2:2:50j]
+    fmesh = f(np.array([xmesh, ymesh]))
+    return [xmesh, ymesh, fmesh]
+
+
+def getError():
+    return
+
+
+def drawContourLine(contours, errors):
+
+    plt.axis("equal")
+    plt.contour(contours[0], contours[1], contours[2])
+    plt.show()
+
+
 if __name__ == "__main__":
     data = createData()
     apples, oranges = sortData(data)
     drawScatterPlot(apples, oranges)
+    contours = createContours()
+    errors = getError()
+    drawContourLine(contours, errors)
