@@ -5,9 +5,7 @@
 # Project 1
 
 import numpy as np
-import matplotlib.pyplot as plt
 import math
-import json
 
 
 def setup():
@@ -54,27 +52,3 @@ def takeStep(StepInfo):
 
     print("Calculated Weights:", StepInfo["weights"], "Error:", (error*0.5))
     return StepInfo
-
-
-def getZ(arr):
-    error = 0
-    final = []
-    for i in range(0, 25):
-        # first calculate z value
-        arr["z"][i] = (arr["weights"][0]*arr["inputs"][i][0]) + (arr["weights"][1]*arr["inputs"][i][1])
-
-        # calculate activation function value
-        arr["calculatedOutput"][i] = 1/(1 + math.exp(-arr["z"][i]))  # Final output through sigmoid
-
-        # calculate error
-        error += (0.5)*((arr["testOutputs"][i] - arr["calculatedOutput"][i])**2)
-
-        # now ready to calculate weight difference for each weight value
-        for j in range(0, 2):
-            arr["deltaWeights"][i, j] = arr["inputs"][i][j] * arr["calculatedOutput"][i] * ((1 - arr["calculatedOutput"][i])*(arr["testOutputs"][i] - arr["calculatedOutput"][i]))
-
-        arr["deltaWeightsSum"] = arr["deltaWeights"].sum(axis=0)
-        arr["weights"] = arr["deltaWeightsSum"] + arr["weights"]
-
-        final.append([arr['inputs'][i][0], arr['inputs'][i][1], float(error*0.5)])
-    return final

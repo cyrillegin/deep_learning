@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from gradient_descent import takeStep, setup, getZ
+from gradient_descent import takeStep, setup
 
 
 def createData():
@@ -30,7 +30,6 @@ def drawScatterPlot(apples, oranges, stepCounter):
         plt.scatter(oranges[0], oranges[1], c='b')
         plt.scatter(apples[0], apples[1], c='r')
         stepCounter = takeStep(stepCounter)
-        print stepCounter['weights']
         plt.plot(x, (-stepCounter["weights"][0] / stepCounter['weights'][1])*x, c='g')
         plt.show()
 
@@ -39,31 +38,32 @@ def f(x):
     return 0.5*x[0]**2 + 2.5*x[1]**2
 
 
-def createContours(stepCounter):
-    xmesh, ymesh = np.mgrid[-2:2:10j, -2:2:10j]
-    fmesh = getZArr(stepCounter)
-    print "got bak"
-    print fmesh
-    # print xmesh
-    return fmesh
+def drawContourLine(stepCounter):
+    # print stepCounter['deltaWeights']
+    # print stepCounter['finalOutput']
+    A = np.array([[3, 2], [2, 6]])  # we should have stepCounter['deltaWeights'] here
+    b = np.array([[2], [8], ])  # we should have stepCounter['finalOutput'] here
+    x = np.ones((np.shape(A)[0], 1))
 
+    x_ini = -2
+    x_end = 2
+    y_ini = -2
+    y_end = 2
+    rate_of_points = 0.25
 
-def getZArr(stepCounter):
-    coords = []
-    for i in range(0, 5):
-        for j in range(0, 5):
-            coords.append((i, j))
-    stepCounter['inputs'] = coords
-    print "sending:"
-    print coords
-    return getZ(stepCounter)
+    x1, x2 = np.meshgrid(np.arange(x_ini, x_end, rate_of_points), np.arange(y_ini, y_end, rate_of_points))
+    fq = np.zeros(np.shape(x1))
 
+    for i in xrange(len(x1)):
+        for j in xrange(len(x2)):
+            x = np.array([x1[i][j], x2[i][j]])
+            fq[i][j] = np.dot(x, np.dot(A, x)) - 2 * np.dot(x, b)
 
-def drawContourLine(contours):
+    plt.figure()
+    plt.contour(x1, x2, fq, colors='k')
 
-    plt.axis("equal")
-    plt.contour(contours[0], contours[1], contours[2])
     plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     data = createData()
     apples, oranges = sortData(data)
     # drawScatterPlot(apples, oranges, stepCounter)
-    contours = createContours(stepCounter)
-    drawContourLine(contours)
+    # contours = createContours(stepCounter)
+    drawContourLine(stepCounter)
