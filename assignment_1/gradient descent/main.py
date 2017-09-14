@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from gradient_descent import takeStep, setup
 
 
 def createData():
@@ -23,11 +24,15 @@ def sortData(data):
     return apples, oranges
 
 
-def drawScatterPlot(apples, oranges):
-    plt.scatter(oranges[0], oranges[1], c='b')
-    plt.scatter(apples[0], apples[1], c='r')
-    plt.plot([-2, 2], [-2, 2])
-    plt.show()
+def drawScatterPlot(apples, oranges, stepCounter):
+    for i in range(0, 5):
+        x = np.linspace(-2, 2, 100)
+        plt.scatter(oranges[0], oranges[1], c='b')
+        plt.scatter(apples[0], apples[1], c='r')
+        stepCounter = takeStep(stepCounter)
+        print stepCounter['weights']
+        plt.plot(x, (-stepCounter["weights"][0] / stepCounter['weights'][1])*x, c='g')
+        plt.show()
 
 
 def f(x):
@@ -35,16 +40,12 @@ def f(x):
 
 
 def createContours():
-    xmesh, ymesh = np.mgrid[-2:2:50j, -2:2:50j]
+    xmesh, ymesh = np.mgrid[-2:2:10j, -2:2:10j]
     fmesh = f(np.array([xmesh, ymesh]))
     return [xmesh, ymesh, fmesh]
 
 
-def getError():
-    return
-
-
-def drawContourLine(contours, errors):
+def drawContourLine(contours):
 
     plt.axis("equal")
     plt.contour(contours[0], contours[1], contours[2])
@@ -52,9 +53,9 @@ def drawContourLine(contours, errors):
 
 
 if __name__ == "__main__":
+    stepCounter = setup()
     data = createData()
     apples, oranges = sortData(data)
-    drawScatterPlot(apples, oranges)
+    # drawScatterPlot(apples, oranges, stepCounter)
     contours = createContours()
-    errors = getError()
-    drawContourLine(contours, errors)
+    drawContourLine(contours)
