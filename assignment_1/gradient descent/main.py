@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from gradient_descent import takeStep, setup
+from gradient_descent import takeStep, setup, getZ
 
 
 def createData():
@@ -39,10 +39,24 @@ def f(x):
     return 0.5*x[0]**2 + 2.5*x[1]**2
 
 
-def createContours():
+def createContours(stepCounter):
     xmesh, ymesh = np.mgrid[-2:2:10j, -2:2:10j]
-    fmesh = f(np.array([xmesh, ymesh]))
-    return [xmesh, ymesh, fmesh]
+    fmesh = getZArr(stepCounter)
+    print "got bak"
+    print fmesh
+    # print xmesh
+    return fmesh
+
+
+def getZArr(stepCounter):
+    coords = []
+    for i in range(0, 5):
+        for j in range(0, 5):
+            coords.append((i, j))
+    stepCounter['inputs'] = coords
+    print "sending:"
+    print coords
+    return getZ(stepCounter)
 
 
 def drawContourLine(contours):
@@ -57,5 +71,5 @@ if __name__ == "__main__":
     data = createData()
     apples, oranges = sortData(data)
     # drawScatterPlot(apples, oranges, stepCounter)
-    contours = createContours()
+    contours = createContours(stepCounter)
     drawContourLine(contours)
