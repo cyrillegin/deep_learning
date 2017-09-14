@@ -25,6 +25,7 @@ def sortData(data):
 
 
 def drawScatterPlot(apples, oranges, stepCounter):
+    # Only display the first five steps.
     for i in range(0, 5):
         x = np.linspace(-2, 2, 100)
         plt.scatter(oranges[0], oranges[1], c='b')
@@ -39,10 +40,8 @@ def f(x):
 
 
 def drawContourLine(stepCounter):
-    # print stepCounter['deltaWeights']
-    # print stepCounter['finalOutput']
-    A = np.array([[3, 2], [2, 6]])  # we should have stepCounter['deltaWeights'] here
-    b = np.array([[2], [8], ])  # we should have stepCounter['finalOutput'] here
+    A = np.array([stepCounter['deltaWeights'][0], stepCounter['deltaWeights'][1]])
+    b = np.array([stepCounter['finalOutput'][0], stepCounter['finalOutput'][1], ])
     x = np.ones((np.shape(A)[0], 1))
 
     x_ini = -2
@@ -70,6 +69,6 @@ if __name__ == "__main__":
     stepCounter = setup()
     data = createData()
     apples, oranges = sortData(data)
-    # drawScatterPlot(apples, oranges, stepCounter)
-    # contours = createContours(stepCounter)
+    drawScatterPlot(apples, oranges, stepCounter)
+    stepCounter = setup()
     drawContourLine(stepCounter)
