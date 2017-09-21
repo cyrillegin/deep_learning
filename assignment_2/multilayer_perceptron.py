@@ -1,10 +1,8 @@
 # had to add this - RL
 import sys
 sys.path.append('../../')
-sys.path.append('')
-
 import input_data
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+mnist = input_data.read_data_sets("../../data/", one_hot=True)
 
 import tensorflow as tf
 import time, shutil, os
@@ -16,7 +14,7 @@ n_hidden_2 = 256
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 10
+training_epochs = 1000
 batch_size = 100
 display_step = 1
 

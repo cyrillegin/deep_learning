@@ -1,19 +1,17 @@
 # had to add this - RL
 import sys
-sys.path.append('../../')
-sys.path.append('../')
-
-from fdl_examples.datatools import input_data
-mnist = input_data.read_data_sets("../../data/", one_hot=True)
-
-
+import input_data
 import tensorflow as tf
 import time, shutil, os
 import matplotlib as plot
 import matplotlib.pyplot as pyplt
 from random import randint
 import numpy as np
-from fdl_examples.chapter3.multilayer_perceptron import inference, loss
+from multilayer_perceptron import inference, loss
+sys.path.append('../../')
+sys.path.append('../')
+
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
