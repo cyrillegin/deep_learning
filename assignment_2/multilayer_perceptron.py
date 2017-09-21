@@ -1,11 +1,7 @@
 # had to add this - RL
-import sys
-sys.path.append('../../')
-import input_data
-mnist = input_data.read_data_sets("../../data/", one_hot=True)
-
 import tensorflow as tf
-import time, shutil, os
+import shutil
+import os
 
 
 # Architecture
@@ -18,6 +14,7 @@ training_epochs = 1000
 batch_size = 100
 display_step = 1
 
+
 def layer(input, weight_shape, bias_shape):
     weight_init = tf.random_normal_initializer(stddev=(2.0/weight_shape[0])**0.5)
     bias_init = tf.constant_initializer(value=0)
@@ -26,6 +23,7 @@ def layer(input, weight_shape, bias_shape):
     b = tf.get_variable("b", bias_shape,
                         initializer=bias_init)
     return tf.nn.relu(tf.matmul(input, W) + b)
+
 
 def inference(x):
     with tf.variable_scope("hidden_1"):
@@ -39,10 +37,12 @@ def inference(x):
 
     return output
 
+
 def loss(output, y):
     xentropy = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=y)
     loss = tf.reduce_mean(xentropy)
     return loss
+
 
 def training(cost, global_step):
     tf.summary.scalar("cost", cost)
@@ -57,6 +57,7 @@ def evaluate(output, y):
     tf.summary.scalar("validation", accuracy)
     return accuracy
 
+
 if __name__ == '__main__':
 
     if os.path.exists("mlp_logs/"):
@@ -66,9 +67,8 @@ if __name__ == '__main__':
 
         with tf.variable_scope("mlp_model"):
 
-            x = tf.placeholder("float", [None, 784]) # mnist data image of shape 28*28=784
-            y = tf.placeholder("float", [None, 10]) # 0-9 digits recognition => 10 classes
-
+            x = tf.placeholder("float", [None, 784])  # mnist data image of shape 28*28=784
+            y = tf.placeholder("float", [None, 10])  # 0-9 digits recognition => 10 classes
 
             output = inference(x)
 
@@ -86,16 +86,13 @@ if __name__ == '__main__':
 
             sess = tf.Session()
 
-            summary_writer = tf.summary.FileWriter("mlp_logs/",
-                                                graph_def=sess.graph_def)
-
+            summary_writer = tf.summary.FileWriter("mlp_logs/", graph_def=sess.graph_def)
 
             init_op = tf.global_variables_initializer()
 
             sess.run(init_op)
 
             # saver.restore(sess, "mlp_logs/model-checkpoint-66000")
-
 
             # Training cycle
             for epoch in range(training_epochs):
@@ -122,9 +119,7 @@ if __name__ == '__main__':
 
                     saver.save(sess, "mlp_logs/model-checkpoint", global_step=global_step)
 
-
             print("Optimization Finished!")
-
 
             accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 

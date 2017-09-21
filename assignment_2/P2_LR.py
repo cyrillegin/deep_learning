@@ -2,8 +2,6 @@
 import sys
 import input_data
 import tensorflow as tf
-import time, shutil, os
-import matplotlib as plot
 import matplotlib.pyplot as pyplt
 from random import randint
 import numpy as np
@@ -19,35 +17,35 @@ training_epochs = 60
 batch_size = 100
 display_step = 1
 
+
 def inference(x):
     init = tf.constant_initializer(value=0)
-    W = tf.get_variable("W", [784, 10],
-                         initializer=init)
-    b = tf.get_variable("b", [10],
-                         initializer=init)
+    W = tf.get_variable("W", [784, 10], initializer=init)
+    b = tf.get_variable("b", [10], initializer=init)
     output = tf.nn.softmax(tf.matmul(x, W) + b)
 
-    w_hist = tf.summary.histogram("weights", W)
-    b_hist = tf.summary.histogram("biases", b)
-    y_hist = tf.summary.histogram("output", output)
+    # w_hist = tf.summary.histogram("weights", W)
+    # b_hist = tf.summary.histogram("biases", b)
+    # y_hist = tf.summary.histogram("output", output)
 
     return output
 
+
 def displayImage(calculatedWeights):
-    for i in range (0, 10):
+    for i in range(0, 10):
         nextImage = False
-        while nextImage == False:
+        while nextImage is False:
             labelIndex = randint(0, 55000)
             if mnist.train.labels[labelIndex][i] == 1:
                 image = mnist.train.images[labelIndex]
-                image = np.array(image, dtype = 'float')
-                data = image.reshape((28,28))
+                image = np.array(image, dtype='float')
+                data = image.reshape((28, 28))
                 pyplt.figure()
-                pyplt.imshow(data, cmap = 'gnuplot')
+                pyplt.imshow(data, cmap='gnuplot')
                 nextImage = True
     pyplt.show()
 
-    #Now Graph the weights
+    # Now Graph the weights
     # for i in range (0, 10):
     #
     #             image = y.shape[i][i]
@@ -57,6 +55,7 @@ def displayImage(calculatedWeights):
     #             pyplt.imshow(data, cmap = 'gnuplot')
     #             nextImage = True
     # pyplt.show()
+
 
 def loss(output, y):
     dot_product = y * tf.log(output)
@@ -70,6 +69,7 @@ def loss(output, y):
     loss = tf.reduce_mean(xentropy)
 
     return loss
+
 
 def training(cost, global_step):
 
@@ -87,6 +87,7 @@ def evaluate(output, y):
     tf.summary.scalar("validation error", (1.0 - accuracy))
 
     return accuracy
+
 
 if __name__ == '__main__':
     # if os.path.exists("logistic_logs/"):
@@ -155,7 +156,5 @@ if __name__ == '__main__':
     #     accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
     #
     #     print("Test Accuracy:", accuracy)
-
-
 
     displayImage(0)
