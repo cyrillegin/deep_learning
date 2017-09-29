@@ -15,7 +15,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 5
+training_epochs = 10
 batch_size = 100
 display_step = 1
 
@@ -101,17 +101,27 @@ if __name__ == '__main__':
 
         x = tf.placeholder("float", [None, 784])  # mnist data image of shape 28*28=784
         y = tf.placeholder("float", [None, 10])  # 0-9 digits recognition => 10 classes
+
         output = inference(x)
+
         cost = loss(output, y)
+
         global_step = tf.Variable(0, name='global_step', trainable=False)
+
         train_op = training(cost, global_step)
+
         eval_op = evaluate(output, y)
+
         summary_op = tf.summary.merge_all()
+
         saver = tf.train.Saver()
+
         sess = tf.Session()
 
         summary_writer = tf.summary.FileWriter("logistic_logs/", graph_def=sess.graph_def)
+
         init_op = tf.global_variables_initializer()
+
         sess.run(init_op)
 
         # Training cycle
@@ -123,7 +133,7 @@ if __name__ == '__main__':
             for i in range(total_batch):
                 minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
                 # Fit training using batch data
-                sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
+                myArray = sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                 # Compute average loss
                 avg_cost += sess.run(cost, feed_dict={x: minibatch_x, y: minibatch_y})/total_batch
             # Display logs per epoch step
@@ -139,11 +149,16 @@ if __name__ == '__main__':
 
                 saver.save(sess, "logistic_logs/model-checkpoint", global_step=global_step)
 
-
         print("Optimization Finished!")
 
         accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 
         print("Test Accuracy:", accuracy)
-        print output
+        print eval_op
+
+
+    # weights = tf.get_variable("W", [784, 1])
+    # weightArray = np.array(weights, dtype='float')
+    # print Weights
     displayImage()
+    displayImage(myArray)

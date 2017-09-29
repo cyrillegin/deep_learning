@@ -3,6 +3,7 @@ import input_data
 import tensorflow as tf
 import shutil
 import os
+from P2_LR import displayImage
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -12,7 +13,7 @@ n_hidden_2 = 256
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 10
+training_epochs = 20
 batch_size = 100
 display_step = 1
 
@@ -105,7 +106,7 @@ if __name__ == '__main__':
                 for i in range(total_batch):
                     minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
                     # Fit training using batch data
-                    sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
+                    myArray = sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                     # Compute average loss
                     avg_cost += sess.run(cost, feed_dict={x: minibatch_x, y: minibatch_y})/total_batch
                 # Display logs per epoch step
@@ -126,3 +127,4 @@ if __name__ == '__main__':
             accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 
             print("Test Accuracy:", accuracy)
+            displayImage(myArray)
