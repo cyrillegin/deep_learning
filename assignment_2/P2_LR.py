@@ -33,14 +33,15 @@ def inference(x):
     return output
 
 
-def displayImage(imageSet=None):
+def displayImage(imageSet):
+    if imageSet is None:
+        print "err"
+        return
     for i in range(0, 10):
         nextImage = False
         while nextImage is False:
-            labelIndex = randint(0, 55000)
+            labelIndex = randint(0, len(imageSet))
             if mnist.train.labels[labelIndex][i] == 1:
-                if imageSet is None:
-                    imageSet = mnist.train.images
                 image = imageSet[labelIndex]
                 image = np.array(image, dtype='float')
                 data = image.reshape((28, 28))

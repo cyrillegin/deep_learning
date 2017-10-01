@@ -4,6 +4,11 @@ import tensorflow as tf
 import shutil
 import os
 from P2_LR import displayImage
+from scipy.ndimage import rotate
+import math
+import numpy as np
+import matplotlib.pyplot as pyplt
+from random import randint
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -13,8 +18,8 @@ n_hidden_2 = 256
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 20
-batch_size = 100
+training_epochs = 1
+batch_size = 10000
 display_step = 1
 
 
@@ -105,8 +110,10 @@ if __name__ == '__main__':
                 # Loop over all batches
                 for i in range(total_batch):
                     minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
+                    print 'rotating'
+                    minibatch_x = rotate(minibatch_x, randint(0, 360), reshape=False)
                     # Fit training using batch data
-                    myArray = sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
+                    sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                     # Compute average loss
                     avg_cost += sess.run(cost, feed_dict={x: minibatch_x, y: minibatch_y})/total_batch
                 # Display logs per epoch step
@@ -123,8 +130,7 @@ if __name__ == '__main__':
                     saver.save(sess, "mlp_logs/model-checkpoint", global_step=global_step)
 
             print("Optimization Finished!")
-
             accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 
             print("Test Accuracy:", accuracy)
-            displayImage(myArray)
+            displayImage(minibatch_x)
