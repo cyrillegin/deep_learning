@@ -5,10 +5,9 @@ import shutil
 import os
 from P2_LR import displayImage
 from scipy.ndimage import rotate
-import math
 import numpy as np
-import matplotlib.pyplot as pyplt
 from random import randint
+import pandas as pd
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -21,6 +20,8 @@ learning_rate = 0.01
 training_epochs = 1
 batch_size = 10000
 display_step = 1
+
+doRotation = False
 
 
 def layer(input, weight_shape, bias_shape):
@@ -110,8 +111,9 @@ if __name__ == '__main__':
                 # Loop over all batches
                 for i in range(total_batch):
                     minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
-                    print 'rotating'
-                    minibatch_x = rotate(minibatch_x, randint(0, 360), reshape=False)
+                    if doRotation:
+                        print 'rotating'
+                        minibatch_x = rotate(minibatch_x, randint(0, 360), reshape=False)
                     # Fit training using batch data
                     sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                     # Compute average loss
@@ -131,6 +133,16 @@ if __name__ == '__main__':
 
             print("Optimization Finished!")
             accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
+
+            print "Confusion Matrix:"
+            with sess.as_default():
+                res = tf.stack([tf.argmax(y, 1), tf.argmax(y, 1)])
+                ans = res.eval(feed_dict={x: mnist.test.images, y: mnist.test.labels})
+                confusion = np.zeros([10, 10], int)
+
+                for p in ans.T:
+                    confusion[p[0], p[1]] += 1
+                print(pd.DataFrame(confusion))
 
             print("Test Accuracy:", accuracy)
             displayImage(minibatch_x)
