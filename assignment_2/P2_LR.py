@@ -8,6 +8,8 @@ import matplotlib.pyplot as pyplt
 from random import randint
 import numpy as np
 from multilayer_perceptron import inference, loss
+from scipy.ndimage import interpolation
+import pandas as pd
 sys.path.append('../../')
 sys.path.append('../')
 
@@ -15,9 +17,11 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 10
+training_epochs = 1
 batch_size = 100
 display_step = 1
+
+randomScale = True
 
 
 def inference(x):
@@ -40,7 +44,7 @@ def displayImage(imageSet):
     for i in range(0, 10):
         nextImage = False
         while nextImage is False:
-            labelIndex = randint(0, len(imageSet))
+            labelIndex = randint(0, len(imageSet) - 1)
             if mnist.train.labels[labelIndex][i] == 1:
                 image = imageSet[labelIndex]
                 image = np.array(image, dtype='float')
@@ -94,6 +98,59 @@ def evaluate(output, y):
     return accuracy
 
 
+def crop_center(img, cropx, cropy):
+    y, x = img.shape
+    startx = x//2-(cropx//2)
+    starty = y//2-(cropy//2)
+    return img[starty:starty+cropy, startx:startx+cropx]
+
+
+def pad(array, reference_shape, offsets):
+    """
+    array: Array to be padded
+    reference_shape: tuple of size of ndarray to create
+    offsets: list of offsets (number of elements must be equal to the dimension of the array)
+    will throw a ValueError if offsets is too big and the reference_shape cannot handle the offsets
+    """
+
+    # Create an array of zeros with the reference shape
+    result = np.zeros(reference_shape)
+    # Create a list of slices from offset to offset + shape in each dimension
+    insertHere = [slice(offsets[dim], offsets[dim] + array.shape[dim]) for dim in range(array.ndim)]
+    # Insert the array in the result at the specified offsets
+    result[insertHere] = array
+    return result
+
+
+# Adapted from:
+# https://stackoverflow.com/questions/37119071/scipy-rotate-and-zoom-an-image-without-changing-its-dimensions
+def clipped_zoom(img, zoom_factor, **kwargs):
+
+    h, w = img.shape[:2]
+
+    # width and height of the zoomed image
+    zh = int(np.round(zoom_factor * h))
+    zw = int(np.round(zoom_factor * w))
+
+    # for multichannel images we don't want to apply the zoom factor to the RGB
+    # dimension, so instead we create a tuple of zoom factors, one per array
+    # dimension, with 1's for any trailing dimensions after the width and height.
+    zoom_tuple = (zoom_factor,) * 2 + (1,) * (img.ndim - 2)
+
+    # zooming out
+    if zoom_factor < 1:
+        # bounding box of the clip region within the output array
+        top = (h - zh) // 2
+        left = (w - zw) // 2
+        # zero-padding
+        out = np.zeros_like(img)
+        out[top:top+zh, left:left+zw] = interpolation.zoom(img, zoom_tuple, **kwargs)
+
+    # if zoom_factor == 1, just return the input array
+    else:
+        out = img
+    return out
+
 if __name__ == '__main__':
     if os.path.exists("logistic_logs/"):
         shutil.rmtree("logistic_logs/")
@@ -133,8 +190,23 @@ if __name__ == '__main__':
             # Loop over all batches
             for i in range(total_batch):
                 minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
+
+                if randomScale:
+                    # print 'scaling'
+                    ref = np.zeros_like(minibatch_x)
+                    # minibatch_x = interpolation.zoom(minibatch_x, 1)
+                    minibatch_x = clipped_zoom(minibatch_x, 0.5)
+                    # image = np.array(minibatch_x[0], dtype='float')
+                    # data = image.reshape(28,28)
+                    # pyplt.figure()
+                    # pyplt.imshow(data, cmap='gnuplot')
+                    # nextImage = True
+                    # pyplt.show()
+
+                    # imresize(minibatch_x, 2)
+                    # print 'done scaling'
                 # Fit training using batch data
-                myArray = sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
+                sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                 # Compute average loss
                 avg_cost += sess.run(cost, feed_dict={x: minibatch_x, y: minibatch_y})/total_batch
             # Display logs per epoch step
@@ -155,11 +227,16 @@ if __name__ == '__main__':
         accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 
         print("Test Accuracy:", accuracy)
-        print eval_op
 
+        print "Confusion Matrix:"
+        with sess.as_default():
+            res = tf.stack([tf.argmax(y, 1), tf.argmax(y, 1)])
+            ans = res.eval(feed_dict={x: mnist.test.images, y: mnist.test.labels})
+            confusion = np.zeros([10, 10], int)
 
-    # weights = tf.get_variable("W", [784, 1])
-    # weightArray = np.array(weights, dtype='float')
-    # print Weights
-    displayImage()
-    displayImage(myArray)
+            for p in ans.T:
+                confusion[p[0], p[1]] += 1
+            print(pd.DataFrame(confusion))
+
+    displayImage(minibatch_x)
+    print ("done")

@@ -21,7 +21,7 @@ training_epochs = 1
 batch_size = 10000
 display_step = 1
 
-doRotation = False
+doRotation = True
 
 
 def layer(input, weight_shape, bias_shape):
