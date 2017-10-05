@@ -2,7 +2,7 @@ from random import randint
 import numpy as np
 from scipy.ndimage import rotate
 import matplotlib.pyplot as pyplt
-import numpy as np
+from scipy.ndimage import interpolation
 
 
 def displayImages(mnist, imageSet):
@@ -28,6 +28,7 @@ def doRotation(mnist):
         mnist.train.images[i, :] = np.reshape(img, (784,))
     return mnist
 
+
 # Adapted from:
 # https://stackoverflow.com/questions/37119071/scipy-rotate-and-zoom-an-image-without-changing-its-dimensions
 def clipped_zoom(img, zoom_factor):
@@ -50,7 +51,7 @@ def clipped_zoom(img, zoom_factor):
         left = (w - zw) // 2
         # zero-padding
         out = np.zeros_like(img)
-        out[top:top+zh, left:left+zw] = interpolation.zoom(img, zoom_tuple, **kwargs)
+        out[top:top+zh, left:left+zw] = interpolation.zoom(img, zoom_tuple)
 
     # if zoom_factor == 1, just return the input array
     else:

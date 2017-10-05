@@ -3,8 +3,7 @@ import input_data
 import tensorflow as tf
 import shutil
 import os
-from utility import displayImages
-from utility import doRotation, doScale
+from utility import doRotation, doScale, displayImages
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -127,8 +126,8 @@ if __name__ == '__main__':
 
             print("Test Accuracy:", accuracy)
 
-            displayImages(mnist, minibatch_x)
-
             print "Confusion matrix:"
             mat = sess.run(matrix, feed_dict={x: mnist.test.images, y: mnist.test.labels})
             print mat
+
+            displayImages(mnist, minibatch_x)
