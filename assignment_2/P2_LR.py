@@ -4,14 +4,8 @@ import os
 import input_data
 import tensorflow as tf
 import shutil
-import numpy as np
-from multilayer_perceptron import inference, loss
+# from multilayer_perceptron import inference, loss
 from utility import doRotation, doScale, displayImages
-
-import pandas as pd
-from utility import displayImages
-sys.path.append('../../')
-sys.path.append('../')
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -25,6 +19,7 @@ display_step = 1
 rotate = True
 # Set this to scale the images between 0.5 and 1
 scale = True
+
 
 def inference(x):
     init = tf.constant_initializer(value=0)
