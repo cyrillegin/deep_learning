@@ -3,11 +3,8 @@ import input_data
 import tensorflow as tf
 import shutil
 import os
-from P2_LR import displayImage
-from scipy.ndimage import rotate
-import numpy as np
-from random import randint
-import pandas as pd
+from utility import displayImages
+from utility import doRotation, doScale
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -18,10 +15,13 @@ n_hidden_2 = 256
 # Parameters
 learning_rate = 0.01
 training_epochs = 1
-batch_size = 10000
+batch_size = 100
 display_step = 1
 
-doRotation = True
+# Set this to rotate the images.
+rotate = False
+# Set this to scale the images between 0.5 and 1
+scale = True
 
 
 def layer(input, weight_shape, bias_shape):
@@ -31,20 +31,20 @@ def layer(input, weight_shape, bias_shape):
                         initializer=weight_init)
     b = tf.get_variable("b", bias_shape,
                         initializer=bias_init)
-    return tf.nn.relu(tf.matmul(input, W) + b)
+    return tf.nn.relu(tf.matmul(input, W) + b), W
 
 
 def inference(x):
     with tf.variable_scope("hidden_1"):
-        hidden_1 = layer(x, [784, n_hidden_1], [n_hidden_1])
+        hidden_1, W1 = layer(x, [784, n_hidden_1], [n_hidden_1])
 
     with tf.variable_scope("hidden_2"):
-        hidden_2 = layer(hidden_1, [n_hidden_1, n_hidden_2], [n_hidden_2])
+        hidden_2, W2 = layer(hidden_1, [n_hidden_1, n_hidden_2], [n_hidden_2])
 
     with tf.variable_scope("output"):
-        output = layer(hidden_2, [n_hidden_2, 10], [10])
+        output, W3 = layer(hidden_2, [n_hidden_2, 10], [10])
 
-    return output
+    return (output, W1, W2, W3)
 
 
 def loss(output, y):
@@ -64,44 +64,38 @@ def evaluate(output, y):
     correct_prediction = tf.equal(tf.argmax(output, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar("validation", accuracy)
-    return accuracy
+    prediction = tf.argmax(output, 1)
+    correctness = tf.argmax(y, 1)
+    matrix = tf.confusion_matrix(correctness, prediction)
+    return accuracy, matrix
 
 
 if __name__ == '__main__':
+    if rotate:
+        print 'rotating'
+        doRotation(mnist)
+    if scale:
+        print 'scaling'
+        doScale(mnist)
 
     if os.path.exists("mlp_logs/"):
         shutil.rmtree("mlp_logs/")
 
     with tf.Graph().as_default():
-
         with tf.variable_scope("mlp_model"):
-
             x = tf.placeholder("float", [None, 784])  # mnist data image of shape 28*28=784
             y = tf.placeholder("float", [None, 10])  # 0-9 digits recognition => 10 classes
-
-            output = inference(x)
-
+            output, W1, W2, W3 = inference(x)
             cost = loss(output, y)
-
             global_step = tf.Variable(0, name='global_step', trainable=False)
-
             train_op = training(cost, global_step)
-
-            eval_op = evaluate(output, y)
-
+            eval_op, matrix = evaluate(output, y)
             summary_op = tf.summary.merge_all()
-
             saver = tf.train.Saver()
-
             sess = tf.Session()
-
             summary_writer = tf.summary.FileWriter("mlp_logs/", graph_def=sess.graph_def)
-
             init_op = tf.global_variables_initializer()
-
             sess.run(init_op)
-
-            # saver.restore(sess, "mlp_logs/model-checkpoint-66000")
 
             # Training cycle
             for epoch in range(training_epochs):
@@ -111,9 +105,6 @@ if __name__ == '__main__':
                 # Loop over all batches
                 for i in range(total_batch):
                     minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
-                    if doRotation:
-                        print 'rotating'
-                        minibatch_x = rotate(minibatch_x, randint(0, 360), reshape=False)
                     # Fit training using batch data
                     sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y})
                     # Compute average loss
@@ -134,15 +125,10 @@ if __name__ == '__main__':
             print("Optimization Finished!")
             accuracy = sess.run(eval_op, feed_dict={x: mnist.test.images, y: mnist.test.labels})
 
-            print "Confusion Matrix:"
-            with sess.as_default():
-                res = tf.stack([tf.argmax(y, 1), tf.argmax(y, 1)])
-                ans = res.eval(feed_dict={x: mnist.test.images, y: mnist.test.labels})
-                confusion = np.zeros([10, 10], int)
-
-                for p in ans.T:
-                    confusion[p[0], p[1]] += 1
-                print(pd.DataFrame(confusion))
-
             print("Test Accuracy:", accuracy)
-            displayImage(minibatch_x)
+
+            displayImages(mnist, minibatch_x)
+
+            print "Confusion matrix:"
+            mat = sess.run(matrix, feed_dict={x: mnist.test.images, y: mnist.test.labels})
+            print mat
