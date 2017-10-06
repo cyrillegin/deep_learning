@@ -4,19 +4,20 @@ import os
 import input_data
 import tensorflow as tf
 import shutil
+import numpy as np
 # from multilayer_perceptron import inference, loss
-from utility import doRotation, doScale, displayImages
+from utility import doRotation, doScale, displayImages, displayWeights
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 1
+training_epochs = 100
 batch_size = 100
 display_step = 1
 
 # Set this to rotate the images.
-rotate = True
+rotate = False
 # Set this to scale the images between 0.5 and 1
 scale = True
 
@@ -27,7 +28,7 @@ def inference(x):
     b = tf.get_variable("b", [10], initializer=init)
     output = tf.nn.softmax(tf.matmul(x, W) + b)
 
-    return output
+    return output, W
 
 
 def loss(output, y):
@@ -65,10 +66,10 @@ def evaluate(output, y):
 
 if __name__ == '__main__':
     if rotate:
-        print 'rotating'
+        print ('rotating')
         doRotation(mnist)
     if scale:
-        print 'scaling'
+        print ('scaling')
         doScale(mnist)
     if os.path.exists("logistic_logs/"):
         shutil.rmtree("logistic_logs/")
@@ -76,7 +77,7 @@ if __name__ == '__main__':
     with tf.Graph().as_default():
         x = tf.placeholder("float", [None, 784])  # mnist data image of shape 28*28=784
         y = tf.placeholder("float", [None, 10])  # 0-9 digits recognition => 10 classes
-        output = inference(x)
+        [output, weights] = inference(x)
         cost = loss(output, y)
         global_step = tf.Variable(0, name='global_step', trainable=False)
         train_op = training(cost, global_step)
@@ -117,8 +118,11 @@ if __name__ == '__main__':
 
         print("Test Accuracy:", accuracy)
 
-        print "Confusion Matrix:"
+        print ("Confusion Matrix:")
         mat = sess.run(matrix, feed_dict={x: mnist.test.images, y: mnist.test.labels})
-        print mat
+        np.savetxt('MatrixScale.csv', mat, fmt='%0.2f', delimiter =',')
+        
+        calc_weights = sess.run(weights)
 
-        displayImages(mnist, minibatch_x)
+        # displayImages(mnist, calc_weights)
+        displayWeights(calc_weights)

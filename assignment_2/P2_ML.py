@@ -3,7 +3,8 @@ import input_data
 import tensorflow as tf
 import shutil
 import os
-from utility import doRotation, doScale, displayImages
+import numpy as np
+from utility import doRotation, doScale, displayWeights
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -13,7 +14,7 @@ n_hidden_2 = 256
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 1
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
@@ -21,7 +22,6 @@ display_step = 1
 rotate = False
 # Set this to scale the images between 0.5 and 1
 scale = True
-
 
 def layer(input, weight_shape, bias_shape):
     weight_init = tf.random_normal_initializer(stddev=(2.0/weight_shape[0])**0.5)
@@ -43,7 +43,7 @@ def inference(x):
     with tf.variable_scope("output"):
         output, W3 = layer(hidden_2, [n_hidden_2, 10], [10])
 
-    return (output, W1, W2, W3)
+    return (output,  W1)
 
 
 def loss(output, y):
@@ -71,10 +71,10 @@ def evaluate(output, y):
 
 if __name__ == '__main__':
     if rotate:
-        print 'rotating'
+        print('rotating')
         doRotation(mnist)
     if scale:
-        print 'scaling'
+        print('scaling')
         doScale(mnist)
 
     if os.path.exists("mlp_logs/"):
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         with tf.variable_scope("mlp_model"):
             x = tf.placeholder("float", [None, 784])  # mnist data image of shape 28*28=784
             y = tf.placeholder("float", [None, 10])  # 0-9 digits recognition => 10 classes
-            output, W1, W2, W3 = inference(x)
+            [output, calculated_weights] = inference(x)
             cost = loss(output, y)
             global_step = tf.Variable(0, name='global_step', trainable=False)
             train_op = training(cost, global_step)
@@ -126,8 +126,8 @@ if __name__ == '__main__':
 
             print("Test Accuracy:", accuracy)
 
-            print "Confusion matrix:"
             mat = sess.run(matrix, feed_dict={x: mnist.test.images, y: mnist.test.labels})
-            print mat
+            np.savetxt('Matrix_ML_Scaling.csv', mat, fmt='%0.2f', delimiter =',')
 
-            displayImages(mnist, minibatch_x)
+            # displayImages(mnist, minibatch_x)
+            displayWeights(sess.run(calculated_weights))

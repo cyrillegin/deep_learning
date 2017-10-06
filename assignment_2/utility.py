@@ -6,18 +6,36 @@ from scipy.ndimage import interpolation
 
 
 def displayImages(mnist, imageSet):
+    fig = pyplt.figure()
     for i in range(0, 10):
         nextImage = False
         while nextImage is False:
             labelIndex = randint(0, len(imageSet) - 1)
-            if mnist.train.labels[labelIndex][i] == 1:
-                image = imageSet[labelIndex]
+            if mnist.train.labels[labelIndex][i] == 1.0:
+                print(mnist.train.labels[labelIndex], i)
+                image = imageSet[i]
                 image = np.array(image, dtype='float')
                 data = image.reshape((28, 28))
-                pyplt.figure()
-                pyplt.imshow(data, cmap='gnuplot')
+                pyplt.subplot(2, 5, (i+1))
+                pyplt.imshow(data)
                 nextImage = True
+
+    pyplt.SubplotTool
     pyplt.show()
+
+
+def displayWeights(weightSet):
+    fig = pyplt.figure()
+    for i in range(0, 10):
+        data = np.reshape(weightSet[:, i], [28, 28])
+        pyplt.subplot(2, 5, (i+1))
+        pyplt.imshow(data)
+        nextImage = True
+
+    pyplt.SubplotTool
+    pyplt.show()
+
+    
 
 
 def doRotation(mnist):
