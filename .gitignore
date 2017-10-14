@@ -6,3 +6,4 @@ MNIST_data
 *.pyc
 
 *.gz
+*.ipynb_checkpoints*
