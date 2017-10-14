@@ -12,14 +12,14 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 100
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
 # Set this to rotate the images.
-rotate = False
+rotate = True
 # Set this to scale the images between 0.5 and 1
-scale = True
+scale = False
 
 
 def inference(x):
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         print ("Confusion Matrix:")
         mat = sess.run(matrix, feed_dict={x: mnist.test.images, y: mnist.test.labels})
         np.savetxt('MatrixScale.csv', mat, fmt='%0.2f', delimiter =',')
-        
+
         calc_weights = sess.run(weights)
 
         # displayImages(mnist, calc_weights)
